@@ -1,4 +1,4 @@
-
+const Database = require("@replit/database")
 const fs = require('node:fs');
 const path = require('node:path');
 
@@ -40,3 +40,4 @@ for (const file of eventFiles) {
 
 
 client.login(token);
+
