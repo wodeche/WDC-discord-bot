@@ -1,20 +1,29 @@
 const { SlashCommandBuilder } = require('discord.js');
-const Database = require("@replit/database")
-const db = new Database();
 
+const db = require('../../db.js')
 
 module.exports = {
-  cooldown: 1,
+  //cooldown 24hours 
+  cooldown: 86400,
   data: new SlashCommandBuilder()
     .setName('gm')
-    .setDescription('gm  with you !'),
+    .setDescription('daily gm'),
   async execute(interaction) {
     const userId = interaction.user.id;
-    let count = await db.get(userId) || 0;
-    count++;
-    await db.set(userId, count);
-
-    await interaction.reply(`${interaction.user.username} have used /${interaction.commandName} for ${count} times !`);
+    const count = await db.Counts.findOne({ where: { uid: userId } });
+    if (count) {
+      await count.increment('gm_counts');
+      const reloadedCount = await count.reload();
+      const newCount = reloadedCount.get('gm_counts');
+      return interaction.reply(`GM ${interaction.user.username} ! you said gm ${newCount} times`);
+    } else {
+      const count = await db.Counts.create({
+        uid: interaction.user.id,
+        username: interaction.user.username,
+        gm_counts: 1
+      })
+      return interaction.reply(`Welcome ${interaction.user.username},This is the first time you GM in LXDAO！:tada: :tada: :tada: `);
+    }
   }
 };
 
